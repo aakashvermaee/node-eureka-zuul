@@ -1,0 +1,31 @@
+server:
+  port: 8662
+
+spring:
+  application:
+    name: zuul-gateway-service
+
+eureka:
+  client:
+    registerWithEureka: true
+    fetchRegistry: true
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka
+  instance:
+    hostname: localhost
+
+zuul:
+  sensitiveHeaders:
+  host:
+    connect-timeout-millis: 5000000
+    socket-timeout-millis: 5000000
+  ignoredServices: "*"
+  routes:
+    user-management-service:
+      path: /user/**
+      serviceId: user-management-service
+      stripPrefix: true
+    orders-management-service:
+      path: /order/**
+      serviceId: orders-management-service
+      stripPrefix: true
