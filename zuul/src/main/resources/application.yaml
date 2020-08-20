@@ -14,6 +14,12 @@ eureka:
   instance:
     hostname: localhost
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
 zuul:
   sensitiveHeaders:
   host:
@@ -28,4 +34,8 @@ zuul:
     orders-management-service:
       path: /order/**
       serviceId: orders-management-service
+      stripPrefix: true
+    authenticate:
+      path: /user/authenticate
+      serviceId: user-management-service
       stripPrefix: true

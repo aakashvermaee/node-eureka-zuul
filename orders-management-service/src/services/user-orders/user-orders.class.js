@@ -1,7 +1,6 @@
 const { Service } = require("feathers-mongoose");
 const { GeneralError } = require("@feathersjs/errors");
 
-const axios = require("axios").default;
 const uuid = require("uuid").v4;
 
 exports.UserOrders = class UserOrders extends Service {
@@ -13,8 +12,11 @@ exports.UserOrders = class UserOrders extends Service {
 
   async create(data, params) {
     try {
+      console.log("$$$ data:", data);
+
       const orderData = {
         ...data,
+        userId: data.userid || params.headers.userid,
         orderId: uuid(),
       };
       const response = await super.create(orderData, params);
@@ -25,34 +27,16 @@ exports.UserOrders = class UserOrders extends Service {
     }
   }
 
-  async get(id, params) {
-    const order = await super.get(id, params);
-    const user = await axios.get(`${this.zuul}/user/users/${order.userId}`, {
-      headers: {
-        Authorization: params.headers.authorization,
+  async find(params) {
+    const userOrders = await super.find({
+      ...params,
+      query: {
+        ...params.query,
+        userId: params.headers.userid,
       },
     });
 
-    order.user = user.data;
-
-    return order;
-  }
-
-  async find(params) {
-    const userOrders = await super.find({ ...params, paginate: false });
-
-    for (const userOrder of userOrders) {
-      const user = await axios.get(
-        `${this.zuul}/user/users/${userOrder.userId}`,
-        {
-          headers: {
-            Authorization: params.headers.authorization,
-          },
-        }
-      );
-
-      userOrder.user = user.data;
-    }
+    console.log("userOrders:", userOrders);
 
     return userOrders;
   }

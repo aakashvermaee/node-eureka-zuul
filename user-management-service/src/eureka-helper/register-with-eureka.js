@@ -1,23 +1,26 @@
 const axios = require('axios').default;
 const ip = require('ip');
 const logger = require('../logger');
+const _ = require('lodash');
+const helpers = require('./helpers');
+const sendHeartbeat = require('./send-heartbeat');
 
-async function regiterWithEureka(eureka, appName, port, instanceId) {
+async function regiterWithEureka(eureka, appName, port, options = {}) {
   const eurekaUrl = new String(eureka).concat('/apps/').concat(appName);
 
-  logger.info(`Registering with ${appName} Eureka`);
+  logger.info(`Registering ${appName} with Eureka`);
 
   try {
     const eurekaResponse = await axios.post(
       eurekaUrl,
       {
         instance: {
-          hostName: 'localhost',
-          app: `${appName}`.toUpperCase(),
+          app: _.toUpper(appName),
           vipAddress: appName,
-          instanceId,
           ipAddr: ip.address(),
-          status: 'UP',
+          hostName: _.get(options, 'hostName', 'localhost'),
+          instanceId: _.get(options, 'instanceId', helpers.getInstanceId(appName, port)),
+          status: _.get(options, 'status', 'UP'),
           port: {
             $: port,
             '@enabled': true,
@@ -37,6 +40,9 @@ async function regiterWithEureka(eureka, appName, port, instanceId) {
 
     if (eurekaResponse) {
       logger.info('Registered With Eureka');
+
+      sendHeartbeat(eureka, appName, port, {});
+
       return true;
     }
   } catch (error) {
