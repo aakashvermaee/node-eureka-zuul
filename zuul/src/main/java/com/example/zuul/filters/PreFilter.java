@@ -46,11 +46,12 @@ public class PreFilter extends ZuulFilter {
 		RequestContext ctx = RequestContext.getCurrentContext();
 		HttpServletRequest httpRequest = ctx.getRequest();
 
-//		ignore routes that are used to obtain access-token
-		if(httpRequest.getRequestURI().toLowerCase().equals("/user/authentication")) return ctx;
+		// ignore routes that are used to obtain access-token
+		if (httpRequest.getRequestURI().toLowerCase().equals("/user/authentication"))
+			return ctx;
 
-		if(httpRequest.getRequestURI().toLowerCase().equals("/user/users") &&
-				httpRequest.getMethod().toLowerCase().equals("post")) {
+		if (httpRequest.getRequestURI().toLowerCase().equals("/user/users")
+				&& httpRequest.getMethod().toLowerCase().equals("post")) {
 			return ctx;
 		}
 
@@ -84,15 +85,16 @@ public class PreFilter extends ZuulFilter {
 	private Token decodeToken(RequestContext ctx, String accessToken) throws java.io.IOException {
 		InstanceInfo instance = eurekaClient.getNextServerFromEureka("user-management-service", false);
 
-		if (instance == null) return null;
+		if (instance == null)
+			return null;
 
-		final String homePageUrl = ctx.getRequest().getScheme().concat("://") + instance.getHostName() + ":" + instance.getPort() + "/";
+		final String homePageUrl = ctx.getRequest().getScheme().concat("://") + instance.getHostName() + ":"
+				+ instance.getPort() + "/";
 
-		Request request = new Request.Builder()
-				.url(homePageUrl + "decode-token")
-				.addHeader("Authorization", accessToken)
-				.get()
-				.build();
+		LOGGER.info("HomePageURL Builder: {}", this.buildHomePageUrl(ctx, instance));
+
+		Request request = new Request.Builder().url(homePageUrl + "decode-token").addHeader("Authorization", accessToken)
+				.get().build();
 
 		OkHttpClient client = new OkHttpClient();
 		Response response = client.newCall(request).execute();
@@ -103,5 +105,21 @@ public class PreFilter extends ZuulFilter {
 		}
 
 		return null;
+	}
+
+	private String buildHomePageUrl(RequestContext ctx, InstanceInfo instanceInfo) {
+		StringBuilder homePageUrl = new StringBuilder("");
+
+		homePageUrl.append(ctx.getRequest().getScheme());
+		homePageUrl.append("://");
+		homePageUrl.append(instanceInfo.getHostName());
+		homePageUrl.append(":");
+		homePageUrl.append(instanceInfo.getPort());
+
+		if (homePageUrl == null || homePageUrl.toString().equals("")) {
+			return "";
+		}
+
+		return homePageUrl.toString();
 	}
 }

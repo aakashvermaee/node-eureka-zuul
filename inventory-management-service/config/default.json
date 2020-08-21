@@ -1,9 +1,12 @@
 {
   "host": "localhost",
-  "port": 3030,
+  "port": 9002,
   "public": "../public/",
   "paginate": {
     "default": 10,
     "max": 50
-  }
+  },
+  "eureka": "http://localhost:8761/eureka",
+  "zuul": "http://localhost:8662",
+  "mongodb": "mongodb://localhost:27017/inventory-management-service"
 }
