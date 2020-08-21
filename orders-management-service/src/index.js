@@ -4,7 +4,7 @@ const app = require("./app");
 const port = app.get("port");
 const server = app.listen(port);
 
-const { registerWithEureka, sendHeartBeat } = require("./eureka-helper");
+const { registerWithEureka } = require("eureka-helper");
 const { name: appName } = require("../package.json");
 
 process.on("unhandledRejection", (reason, p) =>
