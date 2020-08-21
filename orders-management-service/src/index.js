@@ -18,17 +18,7 @@ server.on("listening", async () => {
     port
   );
 
-  const instanceId = `${appName}-${port}`;
   const eurekaUrl = app.get("eureka");
 
-  const isRegistered = await registerWithEureka(
-    eurekaUrl,
-    appName,
-    port,
-    instanceId
-  );
-
-  if (isRegistered) {
-    sendHeartBeat(eurekaUrl, appName, instanceId);
-  }
+  await registerWithEureka(eurekaUrl, appName, port, {});
 });

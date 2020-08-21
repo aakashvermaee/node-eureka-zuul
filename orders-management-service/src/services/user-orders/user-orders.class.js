@@ -36,8 +36,6 @@ exports.UserOrders = class UserOrders extends Service {
       },
     });
 
-    console.log("userOrders:", userOrders);
-
     return userOrders;
   }
 };

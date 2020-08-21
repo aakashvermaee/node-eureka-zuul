@@ -1,46 +1,52 @@
-const axios = require("axios").default;
-const ip = require("ip");
-const logger = require("../logger");
+const axios = require('axios').default;
+const ip = require('ip');
+const logger = require('../logger');
+const _ = require('lodash');
+const helpers = require('./helpers');
+const sendHeartbeat = require('./send-heartbeat');
 
-async function regiterWithEureka(eureka, appName, port, instanceId) {
-  const eurekaUrl = new String(eureka).concat("/apps/").concat(appName);
+async function regiterWithEureka(eureka, appName, port, options = {}) {
+  const eurekaUrl = new String(eureka).concat('/apps/').concat(appName);
 
-  logger.info(`Registering with ${appName} Eureka`);
+  logger.info(`Registering ${appName} with Eureka`);
 
   try {
     const eurekaResponse = await axios.post(
       eurekaUrl,
       {
         instance: {
-          hostName: "localhost",
-          app: `${appName}`.toUpperCase(),
+          app: _.toUpper(appName),
           vipAddress: appName,
-          instanceId,
           ipAddr: ip.address(),
-          status: "UP",
+          hostName: _.get(options, 'hostName', 'localhost'),
+          instanceId: _.get(options, 'instanceId', helpers.getInstanceId(appName, port)),
+          status: _.get(options, 'status', 'UP'),
           port: {
             $: port,
-            "@enabled": true,
+            '@enabled': true,
           },
           dataCenterInfo: {
-            "@class": "com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo",
-            name: "MyOwn",
+            '@class': 'com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo',
+            name: 'MyOwn',
           },
         },
       },
       {
         headers: {
-          "content-type": "application/json",
+          'content-type': 'application/json',
         },
       }
     );
 
     if (eurekaResponse) {
-      logger.info("Registered With Eureka");
+      logger.info('Registered With Eureka');
+
+      sendHeartbeat(eureka, appName, port, {});
+
       return true;
     }
   } catch (error) {
-    logger.debug("eureka error: ", error);
+    logger.debug('eureka error: ', error);
   }
 }
 
